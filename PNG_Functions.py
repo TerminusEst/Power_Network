@@ -4,7 +4,7 @@ import copy
 ################################################################################
 # Load data
 def substation_internals(substation):
-
+    """ generate substation data from multiple input transformers"""
     trafo_name = substation[0][0]
     trafo_sym = substation[0][1]
     trafo_voltage = substation[0][2][:3]
@@ -120,6 +120,8 @@ def substation_internals(substation):
     return transformers, connections, meta_info
 
 def number_adder(x, y, z, count):
+    """ Change the numbers of each substation so that there are no multiples"""
+
     max_nums = []
     aa, bb, cc = copy.deepcopy(x), copy.deepcopy(y), copy.deepcopy(z)
 
@@ -140,19 +142,8 @@ def number_adder(x, y, z, count):
     return aa, bb, cc, max(max_nums) + 1
 
 
-def write_out(refined_trafos, refined_connections):
-    filename = "/home/blake/Drive/Network_Analysis/Eirgrid_Files/Finished/output.txt"
-    f = open(filename, 'w')
-
-    for j in refined_trafos:
-        f.write(str(j[0]) + "\t" + str(j[1]) + "\t" + str(j[2]) + "\t" + str(j[3]) + "\t" + str(j[4]) + "\n") 
-
-    for j in refined_connections:
-        f.write(str(j[0]) + "\t" + str(j[1]) + "\t" + str(j[2]) + "\t" + str(j[3]) + "\t" + str(j[4]) + "\n") 
-
-    f.close()
-
 def connections_adder(filename, volt, refined_connections2):
+    """ generate connections output"""
     f = open(filename, 'r')
     data = f.readlines()
     f.close()
@@ -197,11 +188,8 @@ def connections_adder(filename, volt, refined_connections2):
     
     return refined_connections2
 
-
-
-
 def write_out(filename, refined_trafos, refined_connections, refined_connections2):
-
+    """ write out trafos and connections"""
 
     f = open(filename, 'w')
 
@@ -218,25 +206,67 @@ def write_out(filename, refined_trafos, refined_connections, refined_connections
 
     f.close()
 
+    print "Successfully written output file!"
 
-    filename = "/home/blake/Drive/Network_Analysis/Eirgrid_Files/Finished/Substation_meta.txt"
+def write_substation_data(filename, substation_meta):
+    """ write out substation meta data """
+
     f = open(filename, 'w')
 
     for i in substation_meta:
         mystr = ""
 
-        count = len(i[5])
-
-        mystr = str(i[0]) + "\t" + str(i[1]) + "\t" + str(i[2])+ "\t" + str(i[3])+ "\t" + str(i[4]) + "\t"
-
-        for j in i[5]:
+        for j in i[:-2]:
             mystr += str(j) + "\t"
+
+        for j in i[-2]:
+            mystr += str(j) + "\t"
+
         mystr += "\n"
 
         f.write(mystr)
 
     f.close()
+   
+    print "Successfully written substation meta file!"
 
-    print "Successfully Written Out"
+def write_connections_data(filename, refined_connections_twixt_stations):
+    """ write out connections meta data """
+    f2 = open(filename2, 'w')
 
+    temp_connections = []
+
+    for i in refined_connections_twixt_stations:
+        x, y = i[0], i[1]
+
+        if ([x, y] in temp_connections) or ([y, x] in temp_connections):
+            continue
+        else:
+            temp_connections.append([x, y])
+
+    for i in temp_connections:
+        x, y = i[0], i[1]
+
+
+        for j in substation_meta:
+            if x in j[-1]:
+                latfrom = j[2]
+                lonfrom = j[3]
+                voltfrom = j[4]
+                break
+
+        for j in substation_meta:
+            if y in j[-1]:
+                latto = j[2]
+                lonto = j[3]
+                voltto = j[4]
+                break
+
+        v = min(voltfrom, voltto)
+
+        mystr = str(v) + "\t" + str(latfrom) + "\t" + str(lonfrom) + "\t" + str(latto) + "\t" + str(lonto) + "\n"
+        f2.write(mystr)
+
+    f2.close()
+    print "Successfully written connections meta file!"
 
