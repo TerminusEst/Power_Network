@@ -1,7 +1,7 @@
 from collections import Counter
 
 """
-Tadhg is a tosser
+Tadhg is a lovely person
 
 1) Make "master" list of substations.
 2) Loop through transformers. Add each transformer to respective substation.
