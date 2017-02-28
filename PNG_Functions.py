@@ -230,7 +230,7 @@ def write_substation_data(filename, substation_meta):
    
     print "Successfully written substation meta file!"
 
-def write_connections_data(filename, refined_connections_twixt_stations):
+def write_connections_data(filename2, refined_connections_twixt_stations):
     """ write out connections meta data """
     f2 = open(filename2, 'w')
 

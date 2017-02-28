@@ -1,7 +1,6 @@
 from collections import Counter
 
 """
-Tadhg is a lovely person
 
 1) Make "master" list of substations.
 2) Loop through transformers. Add each transformer to respective substation.
@@ -103,7 +102,7 @@ for filename, volt in zip(connection_files, voltages):
 ################################################################################
 # 6
 # Write out the output file
-filename = "/home/blake/Drive/Network_Analysis/master_Eirgrid/Output/output.txt"
+filename = "/home/blake/Drive/Network_Analysis/master_Eirgrid/Output/output_with_PRO2MP.txt"
 write_out(filename, refined_trafos, refined_connections, refined_connections_twixt_stations)
 
 # Write out substation meta data
