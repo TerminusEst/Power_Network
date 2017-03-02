@@ -270,3 +270,92 @@ def write_connections_data(filename2, refined_connections_twixt_stations):
     f2.close()
     print "Successfully written connections meta file!"
 
+def resistance_parallel(resistances):
+    res = 0
+    for i in resistances:
+        res += 1./i
+
+    return 1./res
+
+def connections_adder2(filename):
+    individual_connections = []
+
+    f = open(filename, 'r')
+    data = f.readlines()
+    f.close()
+
+    raw = [x.split("\t") for x in data[1:-1]]
+    refined = []
+    for i in raw:
+        namefrom, nameto, volt, circuit, res = i
+        
+        a = [namefrom, nameto, volt, circuit]
+        if a not in refined:
+            refined.append(a)
+
+    for i in refined:
+        total_res = 0
+
+        for j in raw:
+            if i == j[:-1]:
+            
+                namefrom, nameto, volt, circuit, res = j
+                total_res += float(res)
+
+        index1 = ss_meta.index(namefrom)
+        volt1 = int(substation_meta[index1][4])
+        hi1, lo1 = substation_meta[index1][6]
+        
+        index2 = ss_meta.index(nameto)
+        volt2 = int(substation_meta[index2][4])
+        hi2, lo2 = substation_meta[index2][6]
+
+        if volt1 == volt2: # if the substations are same voltage - HI to HI
+            thingy = sorted([hi1, hi2])
+            connection = [thingy[0], thingy[1], round(total_res, 5), nan, volt, circuit]#, namefrom, nameto]
+       
+        elif volt1 > volt2:  # LO to HI
+            thingy = sorted([lo1, hi2])
+            connection = [thingy[0], thingy[1], round(total_res, 5), nan, volt, circuit]#, namefrom, nameto]
+            
+        else:  # HI to LO
+            thingy = sorted([hi1, lo2])
+            connection = [thingy[0], thingy[1], round(total_res, 5), nan, volt, circuit]#, namefrom, nameto]
+
+        # ignore duplicate lines (same connections + same circuit = duplicate)
+        switch = False
+        for j in individual_connections:
+            if [j[0], j[1], j[5]] == [connection[0], connection[1], connection[5]]:
+                switch = True
+                break
+        if switch == False:
+            individual_connections.append(connection)
+                    
+
+    # parallel lines:
+    output_list, temp = [], []
+    mycopy = copy.deepcopy(individual_connections)
+
+    while len(mycopy) > 0:
+        subject = mycopy.pop(0)
+        temp = [subject]
+
+        for index, value in enumerate(mycopy):
+            if [subject[0], subject[1]] == [value[0], value[1]]:
+                temp.append(value)
+                zzz = mycopy.pop(index)
+        
+        if len(temp) > 1:
+            resistances = [x[2] for x in temp]
+            res = resistance_parallel(resistances)
+            
+            xx = temp[0]
+            xxx = [xx[0], xx[1], res, xx[3], xx[4], xx[5]]
+
+            output_list.append(xxx)#, len(temp)])
+
+        else:
+            output_list.append(temp[0])#, len(temp)])
+
+
+    return output_list

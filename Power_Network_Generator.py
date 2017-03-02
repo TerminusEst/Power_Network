@@ -88,21 +88,23 @@ for index, i in enumerate(master_raw):
 # 5
 # Generate connections between substations
 
+
 folder = "/home/blake/Drive/Network_Analysis/master_Eirgrid/Input/"
 connection_files = ["connect_400.txt", "connect_275.txt", "connect_220.txt", "connect_110.txt", "connect_NI110.txt"]
-voltages = ["400", "275", "220", "110", "110"]
 
 refined_connections_twixt_stations = []
 ss_meta = [x[0] for x in substation_meta]
 
 for filename, volt in zip(connection_files, voltages):
     filename = folder + filename
-    refined_connections_twixt_stations = connections_adder(filename, volt, refined_connections_twixt_stations)
+    output = connections_adder2(filename)
+
+    refined_connections_twixt_stations.extend(output)
 
 ################################################################################
 # 6
 # Write out the output file
-filename = "/home/blake/Drive/Network_Analysis/master_Eirgrid/Output/output_with_PRO2MP.txt"
+filename = "/home/blake/Drive/Network_Analysis/master_Eirgrid/Output/output_with_PRO2MP_paralell_connections.txt"
 write_out(filename, refined_trafos, refined_connections, refined_connections_twixt_stations)
 
 # Write out substation meta data
@@ -114,4 +116,3 @@ write_substation_data(filename, substation_meta)
 
 filename = "/home/blake/Drive/Network_Analysis/master_Eirgrid/Output/Connections_meta.txt"
 write_connections_data(filename, refined_connections_twixt_stations)
-
