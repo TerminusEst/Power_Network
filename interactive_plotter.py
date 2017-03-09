@@ -64,7 +64,7 @@ f = open(filename, 'r')
 data = f.readlines()
 f.close()
 
-nnodes = 541#511#56
+nnodes = 511#56
 nconnects = len(a) - nnodes
 
 site_name = [x.split("\t")[-1] for x in data[:nnodes]]

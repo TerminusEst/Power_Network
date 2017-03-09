@@ -74,38 +74,36 @@ def substation_internals(substation):
 
     #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-
     tru_ground = [0, lat + 0.5*dist_incr, lon + dist_incr, 0.00001, float(substation[0][8]), trafo_voltage, trafo_sym]
-    HVss = [1, lat + 2*dist_incr, lon - 0.5*dist_incr, 0.00001, 100000.0, trafo_voltage, trafo_sym]
-    LVss = [2, lat - 2*dist_incr, lon + 0.5*dist_incr, 0.00001, 100000.0, trafo_voltage, trafo_sym]
-    transformers.extend([tru_ground, HVss, LVss])
-    real_grounds.append(0)
+    HVss = [0, lat + 2*dist_incr, lon - 0.5*dist_incr, 0.00001, 100000.0, trafo_voltage, trafo_sym]
+    LVss = [1, lat - 2*dist_incr, lon + 0.5*dist_incr, 0.00001, 100000.0, trafo_voltage, trafo_sym]
+    transformers.extend([HVss, LVss])
 
-    number = 3  # if there are multiple trafos
+
+    number = 2  # if there are multiple trafos
     for index, trafo in enumerate(substation):
 
         if float(trafo[5]) == 2:    # YY
             #print "YY"
             HVt = [number, lat + dist_incr, lon - index*dist_incr, 0.00001, 100000.0, trafo_voltage, trafo_sym]
-            HVt_HVss = [1, number, 0.00001, nan, nan]
+            HVt_HVss = [0, number, 0.00001, nan, nan]
             number += 1
 
             if float(trafo[-1]) == 2: # if the trafo ground is open
                 Gt = [number, lat, lon - index*dist_incr, 0.00001, 100000.0, trafo_voltage, trafo_sym]
-                Gt_tGt = [number, 0, 100000.0, nan, nan]
             else:
-                Gt = [number, lat, lon - index*dist_incr, 0.00001, 100000.0, trafo_voltage, trafo_sym]
-                Gt_tGt = [number, 0, 0.00001, nan, nan]
-            
+                Gt = [number, lat, lon - index*dist_incr, 0.00001, float(substation[0][8])*len(substation), trafo_voltage, trafo_sym]
+            real_grounds.append(number)
             Gt_HVt = [number-1, number, float(trafo[6]), nan, nan]
 
             number += 1
 
             LVt = [number, lat - dist_incr, lon - index*dist_incr, 0.00001, 100000.0, trafo_voltage, trafo_sym]
             LVt_Gt = [number-1, number, float(trafo[7]), nan, nan]
-            LVt_LVss = [2, number, 0.00001, nan, nan]
+            LVt_LVss = [1, number, 0.00001, nan, nan]
             number += 1
 
             transformers.extend([HVt, Gt, LVt])
-            connections.extend([HVt_HVss, Gt_HVt, LVt_Gt, LVt_LVss, Gt_tGt])
+            connections.extend([HVt_HVss, Gt_HVt, LVt_Gt, LVt_LVss])#, Gt_tGt])
 
         if float(trafo[5]) == 1:    # autotransformer
             total_winding_res = float(trafo[6])
@@ -114,25 +112,26 @@ def substation_internals(substation):
 
             #print "AUTO"
             HVt = [number, lat + dist_incr, lon - index*dist_incr, 0.00001, 100000.0, trafo_voltage, trafo_sym]
-            HVt_HVss = [1, number, 0.00001, nan, nan]
+            HVt_HVss = [0, number, 0.00001, nan, nan]
             number += 1
 
             if float(trafo[-1]) == 2:   # if the trafo ground is open
                 Gt = [number, lat, lon - index*dist_incr, 0.00001, 100000.0, trafo_voltage, trafo_sym]
                 Gt_tGt = [number, 0, 100000.0, nan, nan]
             else:
-                Gt = [number, lat, lon - index*dist_incr, 0.00001, 100000.0, trafo_voltage, trafo_sym]
+                Gt = [number, lat, lon - index*dist_incr, 0.00001, float(substation[0][8])*len(substation) + lv_winding_res, trafo_voltage, trafo_sym]
                 Gt_tGt = [number, 0, lv_winding_res, nan, nan]
 
             Gt_HVt = [number-1, number, hv_winding_res, nan, nan]
-            Gt_LVt = [2, number, 0.00001, nan, nan]
+            Gt_LVt = [1, number, 0.00001, nan, nan]
+            real_grounds.append(number)
             number += 1
 
             transformers.extend([HVt, Gt])
-            connections.extend([HVt_HVss, Gt_HVt, Gt_LVt, Gt_tGt])
+            connections.extend([HVt_HVss, Gt_HVt, Gt_LVt])#, Gt_tGt])
 
     meta_info.append(real_grounds)
-    meta_info.append([1, 2])
+    meta_info.append([0, 1])
     return transformers, connections, meta_info
 
 def number_adder(x, y, z, count):
