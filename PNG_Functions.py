@@ -41,13 +41,17 @@ def substation_internals(substation):
             hilo = [0, 1]
 
         if float(substation[0][5]) == 1:    # auto
+            total_winding_res = float(substation[0][6])
+            hv_winding_res = 0.75*total_winding_res
+            lv_winding_res = 0.25*total_winding_res
+
             HVss = [0, lat + dist_incr, lon, 0.00001, 100000.0, trafo_voltage, trafo_sym]
             if float(substation[0][-1]) == 2: # if the trafo ground is open
                 Gt = [1, lat, lon, 0.00001, 100000.0, trafo_voltage, trafo_sym]
             else:
-                Gt = [1, lat, lon, 0.00001, float(substation[0][8]), trafo_voltage, trafo_sym]
+                Gt = [1, lat, lon, 0.00001, float(substation[0][8]) + lv_winding_res, trafo_voltage, trafo_sym]
 
-            Gt_HVss = [0, 1, substation[0][6], nan, nan]
+            Gt_HVss = [0, 1, hv_winding_res, nan, nan]
 
             transformers.extend([HVss, Gt])
             connections.extend([Gt_HVss])
