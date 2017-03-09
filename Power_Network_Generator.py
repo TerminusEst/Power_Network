@@ -1,7 +1,6 @@
 from collections import Counter
 
 """
-
 1) Make "master" list of substations.
 2) Loop through transformers. Add each transformer to respective substation.
 3) For each substation, calculate internal configuration
@@ -16,7 +15,6 @@ The file inputs are
 
 2) Connections
     - Station_from, Station_to, Voltage, Circuit ID, Transmission Res
-
 """
 
 execfile("/home/blake/Drive/Network_Analysis/master_Eirgrid/PNG_Functions.py")
@@ -60,6 +58,8 @@ for i in master_substations:
 
     master_raw.append(temp_list)
 
+#master_raw = master_raw[:5]
+
 ################################################################################
 # 3
 # For each substation, calculate internal configuration
@@ -88,7 +88,6 @@ for index, i in enumerate(master_raw):
 # 5
 # Generate connections between substations
 
-
 folder = "/home/blake/Drive/Network_Analysis/master_Eirgrid/Input/"
 connection_files = ["connect_400.txt", "connect_275.txt", "connect_220.txt", "connect_110.txt", "connect_NI110.txt"]
 
@@ -101,10 +100,13 @@ for filename, volt in zip(connection_files, voltages):
 
     refined_connections_twixt_stations.extend(output)
 
+
+#refined_connections_twixt_stations = []
+
 ################################################################################
 # 6
 # Write out the output file
-filename = "/home/blake/Drive/Network_Analysis/master_Eirgrid/Output/output_with_PRO2MP_paralell_connections.txt"
+filename = "/home/blake/Drive/Network_Analysis/master_Eirgrid/Output/test.txt"
 write_out(filename, refined_trafos, refined_connections, refined_connections_twixt_stations)
 
 # Write out substation meta data
@@ -116,3 +118,4 @@ write_substation_data(filename, substation_meta)
 
 filename = "/home/blake/Drive/Network_Analysis/master_Eirgrid/Output/Connections_meta.txt"
 write_connections_data(filename, refined_connections_twixt_stations)
+
