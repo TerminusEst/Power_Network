@@ -23,8 +23,8 @@ execfile("/home/blake/Drive/Network_Analysis/master_Eirgrid/PNG_Functions.py")
 # Make "master" list of substations.
 # Substations should be in the form:
 # NAME, SYMBOL, VOLTAGE, LAT, LON, TYPE (1,2,3,4 - Auto, YY, Reg, T), WIND RES1, WIND RES2, GROUND RES, Switch
-filename = "/home/blake/Drive/Network_Analysis/master_Eirgrid/Input/Substation_Names.txt"
-#filename = "/home/blake/Drive/Network_Analysis/Horton/Input/Substation_Names.csv"
+#filename = "/home/blake/Drive/Network_Analysis/master_Eirgrid/Input/Substation_Names.txt"
+filename = "/home/blake/Drive/Network_Analysis/Horton/Input/Substation_Names3.csv"
 
 f = open(filename, 'r')
 data = f.readlines()
@@ -66,34 +66,28 @@ for i in master_substations:
 # 3
 # For each substation, calculate internal configuration
 
-refined_trafos = []
-refined_connection = []
-
 refined_trafos, refined_connections, substation_meta = [], [], []
 
-count = 1
+count = 0
 test_list = []
 
 for index, i in enumerate(master_raw):
 
-    a, b, c = substation_internals(i)
-    aa, bb, cc, count = number_adder(a, b, c, count)
+    a, b, c, count = substation_internals(i, count)
 
-    refined_trafos.append(aa)
-    refined_connections.append(bb)
-    substation_meta.append(cc)
+    refined_trafos.append(a)
+    refined_connections.append(b)
+    substation_meta.append(c)
 
-    for k in aa:
-        test_list.append(k[0])
 
 ################################################################################
 # 5
 # Generate connections between substations
-folder = "/home/blake/Drive/Network_Analysis/master_Eirgrid/Input/"
-connection_files = ["connect_400.txt", "connect_275.txt", "connect_220.txt", "connect_110.txt", "connect_NI110.txt"]
-
-#folder = "/home/blake/Drive/Network_Analysis/Horton/Input/"
-#connection_files = ["Connections_500kV.csv", "Connections_345kV.csv"]
+#folder = "/home/blake/Drive/Network_Analysis/master_Eirgrid/Input/"
+#connection_files = ["connect_400.txt", "connect_275.txt", "connect_220.txt", "connect_110.txt", "connect_NI110.txt"]
+"""
+folder = "/home/blake/Drive/Network_Analysis/Horton/Input/"
+connection_files = ["Connections_500kV.csv", "Connections_345kV.csv"]
 
 refined_connections_twixt_stations = []
 ss_meta = [x[0] for x in substation_meta]
@@ -103,20 +97,39 @@ for filename, volt in zip(connection_files, voltages):
     output = connections_adder2(filename)
 
     refined_connections_twixt_stations.extend(output)
+"""
+filename = "/home/blake/Drive/Network_Analysis/Horton/Input/total_connect.csv"
+refined_connections_twixt_stations = connections_adder3(filename, substation_meta)
 
 ################################################################################
 # 6
 # Write out the output file
-filename = "/home/blake/Drive/Network_Analysis/master_Eirgrid/Output/test.txt"
+
+#filename = "/home/blake/Drive/Network_Analysis/master_Eirgrid/Output/test.txt"
+filename = "/home/blake/Drive/Network_Analysis/Horton/Output/test3.txt"
 write_out(filename, refined_trafos, refined_connections, refined_connections_twixt_stations)
 
 # Write out substation meta data
-filename = "/home/blake/Drive/Network_Analysis/master_Eirgrid/Output/Substation_meta.txt"
+#filename = "/home/blake/Drive/Network_Analysis/master_Eirgrid/Output/Substation_meta.txt"
+filename = "/home/blake/Drive/Network_Analysis/Horton/Output/Substation_meta.txt"
 write_substation_data(filename, substation_meta)
 
 #-------------------------------------------------------------------------------
 # connections_meta
-
-filename = "/home/blake/Drive/Network_Analysis/master_Eirgrid/Output/Connections_meta.txt"
+#filename = "/home/blake/Drive/Network_Analysis/master_Eirgrid/Output/Connections_meta.txt"
+filename = "/home/blake/Drive/Network_Analysis/Horton/Output/Connections_meta.txt"
 write_connections_data(filename, refined_connections_twixt_stations)
+
+
+
+
+
+
+
+
+
+
+
+
+
 

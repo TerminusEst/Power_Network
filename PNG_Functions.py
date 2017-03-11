@@ -1,9 +1,8 @@
-# Program to make internal configuration of substation
-import copy
 ################################################################################
-# Load data
+################################################################################
+################################################################################
 
-def substation_internals(substation):
+def substation_internals(substation, count):
     """ Generate internal substation configuration with nodes and internal 
         connections.
 
@@ -15,12 +14,11 @@ def substation_internals(substation):
             substation = list of transformers for one substation
             count = the node count before this substation
 
-
             Returns
             -----------
-            transformers = list of output data for each node
+            transformers = list of output data for each node:
               -> number, lat, lon, trans_resist, earth_resist, voltage, 
-                 substation symbol
+                 substation symbol, transformer code
 
             connections = list of output data for internal connections
               -> nodefrom, nodeto, resistance, nan, nan, voltage
@@ -29,201 +27,201 @@ def substation_internals(substation):
               -> Substation name, substation symbol, lat, lon, voltage, ground 
                  nodes, HV and LV busbar nodes
             
-            count = the node count after this substation
+            number = the node number after this substation
             -----------------------------------------------------------------
 
-        """
+    """
+    count += 1          # transformer count
+    infsmall = 1e-10    # 0 resistance equivalent
+    infbig = 1e10       # inf resistance equivalent
+    dist_incr = 0.00001 # distance increment
 
-    # Paramaters for 0 resistance and inf resistance
-    infsmall = 1e-10
-    infbig = 1e10
+    # Substation info from first trafo
+    ss_name, ss_sym, tf_sym, ss_voltage = substation[0][:4]
 
-    # Initial 
+    trafo_number = len(substation)  # number of transformers
+    lat = float(substation[0][4])  # baditude
+    lon = float(substation[0][5])  # longitude
+    ground_res = float(substation[0][9])    # grounding resistance for substation
 
-    trafo_name = substation[0][0]
-    trafo_sym = substation[0][1]
-    trafo_voltage = substation[0][2][:3]
-
-    #print "SYM: ", trafo_sym
-
-    trafo_number = len(substation)
-    lat = float(substation[0][3])
-    lon = float(substation[0][4])
-
-    dist_incr = 0.00001
-    transformers = []
-    connections = []
-    real_grounds = []
-    meta_info = [trafo_name, trafo_sym, lat, lon, trafo_voltage]   # which transformers are real?
+    transformers, connections, real_grounds = [], [], []
+    meta_info = [ss_name, ss_sym, lat, lon, ss_voltage] 
 
     #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-
-    if trafo_number == 1:   # if there is only 1 trafo
-        if float(substation[0][5]) == 2:    # YY
-            HVss = [0, lat + dist_incr, lon, infsmall, infbig, trafo_voltage, trafo_sym]
-            LVss = [1, lat - dist_incr, lon, infsmall, infbig, trafo_voltage, trafo_sym]
+    #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-
+    # some terminology:
+    # HVss, LVss = HV and LV substation buses
+    # Gt = Grounded transformer    
+    # Gt_HVss = Connection between Gt and HVss
 
-            if float(substation[0][-1]) == 2: # if the trafo ground is open
-                Gt = [2, lat, lon, infsmall, infbig, trafo_voltage, trafo_sym]
-            else:
-                Gt = [2, lat, lon, infsmall, float(substation[0][8]), trafo_voltage, trafo_sym]
+    # In the case that there is a single transformer at the substation:
+    if trafo_number == 1:
+        res1 = float(substation[0][7])     # high winding res
+        res2 = float(substation[0][8])     # low winding res
+        tf_type = substation[0][6]
+        #-----------------------------------------------------------------------
 
-            Gt_HVss = [0, 2, substation[0][6], nan, nan]
-            Gt_LVss = [1, 2, substation[0][7], nan, nan]
+        if tf_type == "YY":    # Single YY transformer
+            HVss = [count, lat + dist_incr, lon, infsmall, infbig, ss_voltage, ss_name, "--"]
+            LVss = [count+1, lat - dist_incr, lon, infsmall, infbig, ss_voltage, ss_name, "--"]
+            Gt = [count+2, lat, lon, infsmall, ground_res, ss_voltage, ss_name, tf_sym]
+
+            Gt_HVss = [count, count+2, res1, nan, nan, nan, ss_voltage]
+            Gt_LVss = [count+1, count+2, res2, nan, nan, nan, ss_voltage]
 
             transformers.extend([HVss, LVss, Gt])
             connections.extend([Gt_HVss, Gt_LVss])
-            real_grounds.append(2)
-            hilo = [0, 1]
+            real_grounds.append(count+2)
+            hilo = [count, count+1]
+            number = count+2
 
-        if float(substation[0][5]) == 1:    # auto
-            total_winding_res = float(substation[0][6])
-            hv_winding_res = 0.75*total_winding_res
-            lv_winding_res = 0.25*total_winding_res
+        #-----------------------------------------------------------------------
 
-            HVss = [0, lat + dist_incr, lon, infsmall, infbig, trafo_voltage, trafo_sym]
-            if float(substation[0][-1]) == 2: # if the trafo ground is open
-                Gt = [1, lat, lon, infsmall, infbig, trafo_voltage, trafo_sym]
-            else:
-                Gt = [1, lat, lon, infsmall, float(substation[0][8]) + lv_winding_res, trafo_voltage, trafo_sym]
+        if tf_type == "A":    # auto
+            HVss = [count, lat + dist_incr, lon, infsmall, infbig, ss_voltage, ss_name, "--"]
+            Gt = [count+1, lat, lon, infsmall, ground_res + res2, ss_voltage, ss_name, tf_sym]
 
-            Gt_HVss = [0, 1, hv_winding_res, nan, nan]
+            Gt_HVss = [count, count+1, res1, nan, nan, nan, ss_voltage]
 
             transformers.extend([HVss, Gt])
             connections.extend([Gt_HVss])
-            real_grounds.append(1)
-            hilo = [0, 1]
+            real_grounds.append(count+1)
+            hilo = [count, count+1]
+            number = count+1
 
-        if float(substation[0][5]) == 3:    # reg
-            transformers.append([0, lat, lon, substation[0][6], substation[0][8], trafo_voltage, trafo_sym])
-            real_grounds.append(0)
-            hilo = [0, 0]
+        #-----------------------------------------------------------------------
 
-        if float(substation[0][5]) == 4:    # TEE
-            transformers.append([0, lat, lon, substation[0][6], substation[0][8], trafo_voltage, trafo_sym])
-            real_grounds.append(0)
-            hilo = [0, 0]
+        if tf_type == "G":    # "end" or "grounded" trafo
+            transformers.append([count, lat, lon, res1, ground_res, ss_voltage, ss_name, tf_sym])
+            real_grounds.append(count)
+            hilo = [count, count]
+            number = count
+
+        #-----------------------------------------------------------------------
+
+        if tf_type == "T":    # TEE
+            transformers.append([count, lat, lon, infsmall, ground_res, ss_voltage, ss_name, tf_sym])
+            real_grounds.append(count)
+            hilo = [count, count]
+            number = count
 
         meta_info.append(real_grounds)
         meta_info.append(hilo)
-        return transformers, connections, meta_info
+        return transformers, connections, meta_info, count
 
     #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-
-    tru_ground = [0, lat + 0.5*dist_incr, lon + dist_incr, infsmall, float(substation[0][8]), trafo_voltage, trafo_sym]
-    HVss = [0, lat + 2*dist_incr, lon - 0.5*dist_incr, infsmall, infbig, trafo_voltage, trafo_sym]
-    LVss = [1, lat - 2*dist_incr, lon + 0.5*dist_incr, infsmall, infbig, trafo_voltage, trafo_sym]
+    # If there are multiple trafos, need HV and LV buses
+    HVss = [count, lat + 2*dist_incr, lon - 0.5*dist_incr, infsmall, infbig, ss_voltage, ss_name, "--"]
+    LVss = [count+1, lat - 2*dist_incr, lon + 0.5*dist_incr, infsmall, infbig, ss_voltage, ss_name, "--"]
     transformers.extend([HVss, LVss])
 
-
-    number = 2  # if there are multiple trafos
+    number = int(count)+2  # we start with number 2: 0 = HVss, 1 = LVss...
     for index, trafo in enumerate(substation):
+        res1 = float(trafo[7])     # high winding res
+        res2 = float(trafo[8])     # low winding res
+        tf_type = trafo[6]
+        tf_sym = trafo[2]
 
-        if float(trafo[5]) == 3:   # 'end' trafo
-            Gt = [number, lat, lon - index*dist_incr, trafo[6], float(substation[0][8])*len(substation), trafo_voltage, trafo_sym]
+        #-----------------------------------------------------------------------
+
+        if tf_type == "YY":    # YY
+            HVt = [number, lat + dist_incr, lon - index*dist_incr, infsmall, infbig, ss_voltage, ss_name, "--"]
+            HVt_HVss = [count, number, infsmall, nan, nan, nan, ss_voltage]
+            number += 1
+
+            Gt = [number, lat, lon - index*dist_incr, infsmall, ground_res * trafo_number, ss_voltage, ss_name, tf_sym]
             real_grounds.append(number)
-            Gt_HVss = [number, 0, infsmall, nan, nan]
+            Gt_HVt = [number-1, number, res1, nan, nan, nan, ss_voltage]
             number += 1
 
-            transformers.extend([Gt])
-            connections.extend([Gt_HVss])#, Gt_tGt])
-
-
-        if float(trafo[5]) == 2:    # YY
-            #print "YY"
-            HVt = [number, lat + dist_incr, lon - index*dist_incr, infsmall, infbig, trafo_voltage, trafo_sym]
-            HVt_HVss = [0, number, infsmall, nan, nan]
-            number += 1
-
-            if float(trafo[-1]) == 2: # if the trafo ground is open
-                Gt = [number, lat, lon - index*dist_incr, infsmall, infbig, trafo_voltage, trafo_sym]
-            else:
-                Gt = [number, lat, lon - index*dist_incr, infsmall, float(substation[0][8])*len(substation), trafo_voltage, trafo_sym]
-            real_grounds.append(number)
-            Gt_HVt = [number-1, number, float(trafo[6]), nan, nan]
-
-            number += 1
-
-            LVt = [number, lat - dist_incr, lon - index*dist_incr, infsmall, infbig, trafo_voltage, trafo_sym]
-            LVt_Gt = [number-1, number, float(trafo[7]), nan, nan]
-            LVt_LVss = [1, number, infsmall, nan, nan]
+            LVt = [number, lat - dist_incr, lon - index*dist_incr, infsmall, infbig, ss_voltage, ss_name, "--"]
+            LVt_Gt = [number-1, number, res2, nan, nan, nan, ss_voltage]
+            LVt_LVss = [count+1, number, infsmall, nan, nan, nan, ss_voltage]
             number += 1
 
             transformers.extend([HVt, Gt, LVt])
-            connections.extend([HVt_HVss, Gt_HVt, LVt_Gt, LVt_LVss])#, Gt_tGt])
+            connections.extend([HVt_HVss, Gt_HVt, LVt_Gt, LVt_LVss])
 
-        if float(trafo[5]) == 1:    # autotransformer
-            total_winding_res = float(trafo[6])
-            hv_winding_res = 0.75*total_winding_res #float(trafo[6])
-            lv_winding_res = 0.25*total_winding_res #float(trafo[7])
+        #-----------------------------------------------------------------------
 
-            HVt = [number, lat + dist_incr, lon - index*dist_incr, infsmall, infbig, trafo_voltage, trafo_sym]
-            HVt_HVss = [0, number, infsmall, nan, nan]
+        if tf_type == "A":    # autotransformer
+            HVt = [number, lat + dist_incr, lon - index*dist_incr, infsmall, infbig, ss_voltage, ss_name, "--"]
+            HVt_HVss = [count, number, infsmall, nan, nan, nan, ss_voltage]
             number += 1
 
-            if float(trafo[-1]) == 2:   # if the trafo ground is open
-                Gt = [number, lat, lon - index*dist_incr, infsmall, infbig, trafo_voltage, trafo_sym]
-                Gt_tGt = [number, 0, infbig, nan, nan]
-            else:
-                Gt = [number, lat, lon - index*dist_incr, lv_winding_res, float(substation[0][8])*len(substation), trafo_voltage, trafo_sym]
+            Gt = [number, lat, lon - index*dist_incr, res2, (ground_res * trafo_number), 
+                    ss_voltage, ss_name, tf_sym]
 
-            Gt_HVt = [number-1, number, hv_winding_res, nan, nan]
-            Gt_LVss = [1, number, infsmall, nan, nan]
+            Gt_HVt = [number-1, number, res1, nan, nan, nan, ss_voltage]
+            Gt_LVss = [count+1, number, infsmall, nan, nan, nan, ss_voltage]
             real_grounds.append(number)
             number += 1
 
             transformers.extend([HVt, Gt])
             connections.extend([HVt_HVss, Gt_HVt, Gt_LVss])
 
+        #-----------------------------------------------------------------------
+
+        if tf_type == "G":   # "end" or "grounded" trafo
+            Gt = [number, lat, lon - index*dist_incr, res1, ground_res * trafo_number, ss_voltage, ss_name, tf_sym]
+            print res1, ground_res * trafo_number, ss_voltage, ss_name, tf_sym
+            real_grounds.append(number)
+            Gt_HVss = [number, count, infsmall, nan, nan, nan, ss_voltage]
+            number += 1
+
+            transformers.extend([Gt])
+            connections.extend([Gt_HVss])#, Gt_tGt])
+
     meta_info.append(real_grounds)
-    meta_info.append([0, 1])
-    return transformers, connections, meta_info
+    meta_info.append([count, count+1])
 
-def number_adder(x, y, z, count):
-    """ Change the numbers of each substation so that there are no multiples"""
+    return transformers, connections, meta_info, number-1
 
-    max_nums = []
-    aa, bb, cc = copy.deepcopy(x), copy.deepcopy(y), copy.deepcopy(z)
-
-    for i, v in enumerate(aa):
-        aa[i][0] += count
-        max_nums.append(aa[i][0])
-
-    for i, v in enumerate(bb):
-        bb[i][0] += count
-        bb[i][1] += count
-        
-    for i, v in enumerate(cc[5]):
-        cc[5][i] += count
-
-    for i, v in enumerate(cc[6]):
-        cc[6][i] += count
-
-    return aa, bb, cc, max(max_nums) + 1
+################################################################################
+################################################################################
+################################################################################
 
 
-def connections_adder(filename, volt, refined_connections2):
-    """ generate connections output"""
+
+
+def connections_adder3(filename, substation_meta):
+    
+    # read in the file
+    #-----------------------------------------------------------------------
     f = open(filename, 'r')
     data = f.readlines()
     f.close()
-
     raw = [x.split("\t") for x in data[1:-1]]
-    refined = []
+
+    #-----------------------------------------------------------------------
+    # work out resistances (incl. parallel lines)
+
+    line_ids, resistances = [], []  # from, to, volt
     for i in raw:
         namefrom, nameto, volt, circuit, res = i
         
-        a = [namefrom, nameto, volt, circuit]
-        if a not in refined:
-            refined.append(a)
+        idd = [namefrom, nameto, volt]
 
-    for i in refined:
-        total_res = 0
+        if idd not in line_ids:
+            line_ids.append(idd)
+            resistances.append([float(res)])
+        else:
+            resistances[line_ids.index(idd)].append(float(res))
 
-        for j in raw:
-            if i == j[:-1]:
-            
-                namefrom, nameto, volt, circuit, res = j
+    for index, value in enumerate(resistances):
+        if len(value) == 1:
+            line_ids[index].append(value[0])
+        else:
+            line_ids[index].append(resistance_parallel(value))
 
-                total_res += float(res)
+    #-----------------------------------------------------------------------
+    # now to work out the connections between nodes
+    
+    ss_meta = [x[0] for x in substation_meta]
+    output = []
+
+    for j in line_ids:
+        namefrom, nameto, volt, res = j
 
         index1 = ss_meta.index(namefrom)
         volt1 = int(substation_meta[index1][4])
@@ -233,117 +231,64 @@ def connections_adder(filename, volt, refined_connections2):
         volt2 = int(substation_meta[index2][4])
         hi2, lo2 = substation_meta[index2][6]
 
-        if volt1 == volt2: # if the substations are same voltage - HI to HI
-            connection = [hi1, hi2, total_res, nan, volt]
-       
-        if volt1 > volt2:  # LO to HI
-            connection = [lo1, hi2, total_res, nan, volt]
-            
-        if volt2 > volt1:  # HI to LO
-            connection = [hi1, lo2, total_res, nan, volt]
+        line_volt = int(volt)   # voltage of power line
 
-        refined_connections2.append(connection)
-    
-    return refined_connections2
+        if volt1 == volt2: # if the substations are same voltage
+            if line_volt < volt1:    # if voltage of line is < voltage of substation - LO to LO
+                thingy = sorted([lo1, lo2])
 
-def write_out(filename, refined_trafos, refined_connections, refined_connections2):
-    """ write out trafos and connections"""
+            else:               # if voltage of line == voltage of substation - HI to HI
+                thingy = sorted([hi1, hi2])
 
-    f = open(filename, 'w')
+        elif volt1 > volt2:  # LO to HI
+            thingy = sorted([lo1, hi2])
 
-    for i in refined_trafos:
-        for j in i:
-            f.write(str(j[0]) + "\t" + str(j[1]) + "\t" + str(j[2]) + "\t" + str(j[3]) + "\t" + str(j[4]) + "\t" + str(j[5]) + "\t" + str(j[6]) + "\n") 
+        else:  # HI to LO
+            thingy = sorted([hi1, lo2])
 
-    for i in refined_connections:
-        for j in i:
-            f.write(str(j[0]) + "\t" + str(j[1]) + "\t" + str(j[2]) + "\t" + str(j[3]) + "\t" + str(j[4]) + "\tnan\n") 
+        connection = [thingy[0], thingy[1], res, nan, nan, nan, nan, line_volt]
 
-    for j in refined_connections2:
-        f.write(str(j[0]) + "\t" + str(j[1]) + "\t" + str(j[2]) + "\t" + str(j[3]) + "\t" + str(j[4]) + "\tnan\n") 
+        output.append(connection)
 
-    f.close()
-
-    print "Successfully written output file!"
-
-def write_substation_data(filename, substation_meta):
-    """ write out substation meta data """
-
-    f = open(filename, 'w')
-
-    for i in substation_meta:
-        mystr = ""
-
-        for j in i[:-2]:
-            mystr += str(j) + "\t"
-
-        for j in i[-2]:
-            mystr += str(j) + "\t"
-
-        mystr += "\n"
-
-        f.write(mystr)
-
-    f.close()
-   
-    print "Successfully written substation meta file!"
-
-def write_connections_data(filename2, refined_connections_twixt_stations):
-    """ write out connections meta data """
-    f2 = open(filename2, 'w')
-
-    temp_connections = []
-
-    for i in refined_connections_twixt_stations:
-        x, y = i[0], i[1]
-
-        if ([x, y] in temp_connections) or ([y, x] in temp_connections):
-            continue
-        else:
-            temp_connections.append([x, y])
-
-    for i in temp_connections:
-        x, y = i[0], i[1]
+        print connection[-1]
+    return output
 
 
-        for j in substation_meta:
-            if x in j[-1]:
-                latfrom = j[2]
-                lonfrom = j[3]
-                voltfrom = j[4]
-                break
+filename = "/home/blake/Drive/Network_Analysis/Horton/Input/total_connect.csv"
 
-        for j in substation_meta:
-            if y in j[-1]:
-                latto = j[2]
-                lonto = j[3]
-                voltto = j[4]
-                break
 
-        v = min(voltfrom, voltto)
 
-        mystr = str(v) + "\t" + str(latfrom) + "\t" + str(lonfrom) + "\t" + str(latto) + "\t" + str(lonto) + "\n"
-        f2.write(mystr)
 
-    f2.close()
-    print "Successfully written connections meta file!"
 
-def resistance_parallel(resistances):
-    res = 0
-    for i in resistances:
-        res += 1./i
 
-    return 1./res
+
 
 def connections_adder2(filename):
+    """Create connections between substations
+
+            Parameters
+            -----------
+            filename = name of file with connections
+
+            Returns
+            -----------
+            output_list = list of connections in form
+              -> node_from, node_to, resistance, nan, nan, nan
+
+            -----------------------------------------------------------------
+    """
+
     individual_connections = []
 
+    # read in the file
     f = open(filename, 'r')
     data = f.readlines()
     f.close()
 
     raw = [x.split("\t") for x in data[1:-1]]
     refined = []
+
+    # get rid of duplicates
     for i in raw:
         namefrom, nameto, volt, circuit, res = i
         
@@ -423,3 +368,130 @@ def connections_adder2(filename):
 
 
     return output_list
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def write_out(filename, refined_trafos, refined_connections, refined_connections2):
+    """ write out trafos and connections"""
+
+    f = open(filename, 'w')
+
+    for i in refined_trafos:
+        for j in i:
+            f.write(str(j[0]) + "\t" + str(j[1]) + "\t" + str(j[2]) + "\t" + str(j[3]) + "\t" + str(j[4]) + "\t" + str(j[5]) + "\t" + str(j[6]) + "\t" + str(j[-1]) + "\n") 
+
+    for i in refined_connections:
+        for j in i:
+            f.write(str(j[0]) + "\t" + str(j[1]) + "\t" + str(j[2]) + "\tnan\tnan\tnan\t" + str(j[-1]) + "\n")
+
+    for j in refined_connections2:
+        f.write(str(j[0]) + "\t" + str(j[1]) + "\t" + str(j[2]) + "\tnan\tnan\tnan\t" + str(j[-1]) + "\n")
+
+    f.close()
+
+    print "Successfully written output file!"
+
+def write_substation_data(filename, substation_meta):
+    """ write out substation meta data """
+
+    f = open(filename, 'w')
+
+    for i in substation_meta:
+        mystr = ""
+
+        for j in i[:-2]:
+            mystr += str(j) + "\t"
+
+        for j in i[-2]:
+            mystr += str(j) + "\t"
+
+        mystr += "\n"
+
+        f.write(mystr)
+
+    f.close()
+   
+    print "Successfully written substation meta file!"
+
+def write_connections_data(filename2, refined_connections_twixt_stations):
+    """ write out connections meta data """
+    f2 = open(filename2, 'w')
+
+    temp_connections = []
+
+    for i in refined_connections_twixt_stations:
+        x, y = i[0], i[1]
+
+        if ([x, y] in temp_connections) or ([y, x] in temp_connections):
+            continue
+        else:
+            temp_connections.append([x, y])
+
+    for i in temp_connections:
+        x, y = i[0], i[1]
+
+
+        for j in substation_meta:
+            if x in j[-1]:
+                latfrom = j[2]
+                lonfrom = j[3]
+                voltfrom = j[4]
+                break
+
+        for j in substation_meta:
+            if y in j[-1]:
+                latto = j[2]
+                lonto = j[3]
+                voltto = j[4]
+                break
+
+        v = min(voltfrom, voltto)
+
+        mystr = str(v) + "\t" + str(latfrom) + "\t" + str(lonfrom) + "\t" + str(latto) + "\t" + str(lonto) + "\n"
+        f2.write(mystr)
+
+    f2.close()
+    print "Successfully written connections meta file!"
+
+def resistance_parallel(resistances):
+    res = 0
+    for i in resistances:
+        res += 1./i
+
+    return 1./res
+
+
