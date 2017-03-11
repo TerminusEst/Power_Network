@@ -24,6 +24,8 @@ execfile("/home/blake/Drive/Network_Analysis/master_Eirgrid/PNG_Functions.py")
 # Substations should be in the form:
 # NAME, SYMBOL, VOLTAGE, LAT, LON, TYPE (1,2,3,4 - Auto, YY, Reg, T), WIND RES1, WIND RES2, GROUND RES, Switch
 filename = "/home/blake/Drive/Network_Analysis/master_Eirgrid/Input/Substation_Names.txt"
+#filename = "/home/blake/Drive/Network_Analysis/Horton/Input/Substation_Names.csv"
+
 f = open(filename, 'r')
 data = f.readlines()
 f.close()
@@ -58,7 +60,7 @@ for i in master_substations:
 
     master_raw.append(temp_list)
 
-#master_raw = master_raw[:5]
+#master_raw = master_raw[:8]
 
 ################################################################################
 # 3
@@ -87,9 +89,11 @@ for index, i in enumerate(master_raw):
 ################################################################################
 # 5
 # Generate connections between substations
-
 folder = "/home/blake/Drive/Network_Analysis/master_Eirgrid/Input/"
 connection_files = ["connect_400.txt", "connect_275.txt", "connect_220.txt", "connect_110.txt", "connect_NI110.txt"]
+
+#folder = "/home/blake/Drive/Network_Analysis/Horton/Input/"
+#connection_files = ["Connections_500kV.csv", "Connections_345kV.csv"]
 
 refined_connections_twixt_stations = []
 ss_meta = [x[0] for x in substation_meta]
@@ -99,9 +103,6 @@ for filename, volt in zip(connection_files, voltages):
     output = connections_adder2(filename)
 
     refined_connections_twixt_stations.extend(output)
-
-
-#refined_connections_twixt_stations = []
 
 ################################################################################
 # 6
