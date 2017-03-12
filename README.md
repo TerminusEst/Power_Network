@@ -31,9 +31,10 @@ Verified with the [Horton 2012](http://ieeexplore.ieee.org/abstract/document/629
 After calculating GICs for a uniform electric field, compared to Horton:
 ![Comparison](https://cloud.githubusercontent.com/assets/20742138/23833590/0e27c958-0740-11e7-9ae6-beaf2dda4ed4.png)
 
+Horton_Plotter.py gives the following:
+![Horton_Network](https://cloud.githubusercontent.com/assets/20742138/23833656/8c753db8-0740-11e7-9b63-981efeee10f4.png)
 
-
-Gives a tasty model which looks like the following:
+Finally, when applied to a larger network such as Ireland:
 ![irish_power_network](https://cloud.githubusercontent.com/assets/20742138/23032365/ffc3b020-f46b-11e6-85d7-3b0ad793ca57.png)
 
 
