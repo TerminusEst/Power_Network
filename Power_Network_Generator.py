@@ -1,125 +1,47 @@
-from collections import Counter
+"""Program to make power network model from transformer information and connections.
+
+    Required for this program is 2 inputs:
+
+    1) csv file containing transformer info. The columns should be:
+
+        SS_NAME = Subsation name (important to keep spelling uniform)
+        SS_SYM = Substation symbol
+        TF_SYM = Transformer symbol (or code: e.g, T1432)
+        VOLTAGE = Highest operating voltage of the substation
+        LAT = Latitude
+        LON = Longitude
+        TYPE = Type of transformer: 'A' = autotransformer, "YY" = Wye-Wye, "G" = grounded, "T" = Tee connection station.
+        RES1 = High voltage resistance winding
+        RES2 = Low voltage resistance winding
+        GROUND = Ground resistance at substation
+        SWITCH = Transformer ground switch: 0 = None, 1 = Open, 2 = Closed
+
+    2) csv file containing substation connection info. The columns should be:
+        FROM = Substation name from
+        TO = Substation name to
+        VOLTAGE = Voltage of connection
+        CIRCUIT = To denote multiple lines per connection
+        RES = Resistance of line.
+
+    An example of the code running for the Horton et al 2012 test case paper is outlined below:
 
 """
-1) Make "master" list of substations.
-2) Loop through transformers. Add each transformer to respective substation.
-3) For each substation, calculate internal configuration
-4) write transformers to output format, keeping correct trafo numbers.
-5) worry about connections
-6) Write-out output, 
 
-The file inputs are 
-
-1) Transformer data
-    - Name, Code, Voltage, Lat, Lon, Type, Res1, Res2, Ground, Switchable
-
-2) Connections
-    - Station_from, Station_to, Voltage, Circuit ID, Transmission Res
-"""
-
-execfile("/home/blake/Drive/Network_Analysis/master_Eirgrid/PNG_Functions.py")
+import PNG_Functions as PNG
 ################################################################################
-# 1
-# Make "master" list of substations.
-# Substations should be in the form:
-# NAME, SYMBOL, VOLTAGE, LAT, LON, TYPE (1,2,3,4 - Auto, YY, Reg, T), WIND RES1, WIND RES2, GROUND RES, Switch
-#filename = "/home/blake/Drive/Network_Analysis/master_Eirgrid/Input/Substation_Names.txt"
-filename = "/home/blake/Drive/Network_Analysis/Horton/Input/Substation_Names3.csv"
 
-f = open(filename, 'r')
-data = f.readlines()
-f.close()
+# read in transformer file, generate substation data:
+filename = "Data/Horton_Trafo_Info.csv"
+ss_trafos, ss_connections, ss_meta = PNG.make_substations2(filename)
 
-# Read in data, skip first row (headings), skip last row (empty)
-master = [x.split("\t") for x in data[1:-1]]
-voltages = [x[2] for x in master]
-
-substation_names = []
-substation_volt = []
-substation_sym = []
-
-for j in master:
-    if j[0] not in substation_names:
-        substation_names.append(j[0])
-        substation_volt.append(j[2])
-        substation_sym.append(j[1])
-
-master_substations = substation_sym
+# Generate connections between substations:
+filename = "Data/Horton_Connection_Info.csv"
+connections_twixt_stations = PNG.connections_adder(filename, ss_meta)
 
 ################################################################################
-# 2
-# Loop through trafos, add each to respective substation.
-
-master_raw = []
-for i in master_substations:
-    temp_list = []
-
-    for index, value in enumerate(master):
-        if i == value[1]:
-            temp_list.append(value)
-
-    master_raw.append(temp_list)
-
-#master_raw = master_raw[:8]
-
-################################################################################
-# 3
-# For each substation, calculate internal configuration
-
-refined_trafos, refined_connections, substation_meta = [], [], []
-
-count = 0
-test_list = []
-
-for index, i in enumerate(master_raw):
-
-    a, b, c, count = substation_internals(i, count)
-
-    refined_trafos.append(a)
-    refined_connections.append(b)
-    substation_meta.append(c)
-
-
-################################################################################
-# 5
-# Generate connections between substations
-#folder = "/home/blake/Drive/Network_Analysis/master_Eirgrid/Input/"
-#connection_files = ["connect_400.txt", "connect_275.txt", "connect_220.txt", "connect_110.txt", "connect_NI110.txt"]
-"""
-folder = "/home/blake/Drive/Network_Analysis/Horton/Input/"
-connection_files = ["Connections_500kV.csv", "Connections_345kV.csv"]
-
-refined_connections_twixt_stations = []
-ss_meta = [x[0] for x in substation_meta]
-
-for filename, volt in zip(connection_files, voltages):
-    filename = folder + filename
-    output = connections_adder2(filename)
-
-    refined_connections_twixt_stations.extend(output)
-"""
-filename = "/home/blake/Drive/Network_Analysis/Horton/Input/total_connect.csv"
-refined_connections_twixt_stations = connections_adder3(filename, substation_meta)
-
-################################################################################
-# 6
 # Write out the output file
-
-#filename = "/home/blake/Drive/Network_Analysis/master_Eirgrid/Output/test.txt"
-filename = "/home/blake/Drive/Network_Analysis/Horton/Output/test3.txt"
-write_out(filename, refined_trafos, refined_connections, refined_connections_twixt_stations)
-
-# Write out substation meta data
-#filename = "/home/blake/Drive/Network_Analysis/master_Eirgrid/Output/Substation_meta.txt"
-filename = "/home/blake/Drive/Network_Analysis/Horton/Output/Substation_meta.txt"
-write_substation_data(filename, substation_meta)
-
-#-------------------------------------------------------------------------------
-# connections_meta
-#filename = "/home/blake/Drive/Network_Analysis/master_Eirgrid/Output/Connections_meta.txt"
-filename = "/home/blake/Drive/Network_Analysis/Horton/Output/Connections_meta.txt"
-write_connections_data(filename, refined_connections_twixt_stations)
-
+filename = "Data/Horton_Model_Output.txt"
+PNG.write_out(filename, ss_trafos, ss_connections, connections_twixt_stations)
 
 
 
