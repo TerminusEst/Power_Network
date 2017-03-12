@@ -1,4 +1,7 @@
-import sys
+"""
+Nice program to plot the Horton ouput file
+
+"""import sys
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
@@ -9,7 +12,8 @@ import matplotlib.patheffects as path_effects
 #-------------------------------------------------------------------------------
 # Substations
 
-filename = "Horton_Model_Output.txt"
+
+filename = "Data/Horton_Model_Output.txt"
 a, b, c, d, e, f, z = np.loadtxt(filename, usecols = (0, 1, 2, 3, 4, 5, 8), unpack = True)
 
 nnodes = 40
