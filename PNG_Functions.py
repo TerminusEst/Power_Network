@@ -155,11 +155,14 @@ def substation_internals(substation, count):
             connections.extend([Gt_HVss, Gt_LVss])
             real_grounds.append(count+2)
             hilo = [count, count+1]
-            number = count+2
+            number = int(count+2)
 
         #-----------------------------------------------------------------------
 
         if tf_type == "A":    # auto
+            #res1 = float(substation[0][7])*0.75     # high winding res
+            #res2 = res1*0.33333333
+
             HVss = [count, lat + dist_incr, lon, infsmall, infbig, ss_voltage, ss_name, "--", 'nan']
             Gt = [count+1, lat, lon, infsmall, ground_res + res2, ss_voltage, ss_name, tf_sym, switch]
 
@@ -169,7 +172,7 @@ def substation_internals(substation, count):
             connections.extend([Gt_HVss])
             real_grounds.append(count+1)
             hilo = [count, count+1]
-            number = count+1
+            number = int(count+1)
 
         #-----------------------------------------------------------------------
 
@@ -177,7 +180,7 @@ def substation_internals(substation, count):
             transformers.append([count, lat, lon, res1, ground_res, ss_voltage, ss_name, tf_sym, switch])
             real_grounds.append(count)
             hilo = [count, count]
-            number = count
+            number = int(count)
 
         #-----------------------------------------------------------------------
 
@@ -185,8 +188,9 @@ def substation_internals(substation, count):
             transformers.append([count, lat, lon, infsmall, ground_res, ss_voltage, ss_name, tf_sym, 'nan'])
             real_grounds.append(count)
             hilo = [count, count]
-            number = count
-
+            number = int(count)
+    
+        count = int(number)
         meta_info.append(real_grounds)
         meta_info.append(hilo)
         return transformers, connections, meta_info, count
@@ -227,6 +231,10 @@ def substation_internals(substation, count):
         #-----------------------------------------------------------------------
 
         if tf_type == "A":    # autotransformer
+
+            #res1 = float(trafo[7])*0.75     # high winding res
+            #res2 = res1*0.33333333
+
             HVt = [number, lat + dist_incr, lon - index*dist_incr, infsmall, infbig, ss_voltage, ss_name, "--", 'nan']
             HVt_HVss = [count, number, infsmall, 'nan', 'nan', 'nan', 'nan', 'nan', ss_voltage]
             number += 1
@@ -369,7 +377,6 @@ def connections_adder(filename, substation_meta):
 
         output.append(connection)
 
-        print connection[-1]
     return output
 
 ################################################################################
