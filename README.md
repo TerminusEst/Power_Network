@@ -6,7 +6,7 @@ The program handles different types of transformers (Auto and two-winding), and 
 
 Uses the approach outlined [here](http://onlinelibrary.wiley.com/doi/10.1002/2016SW001499/full).
 
-##**Inputs Required**
+## **Inputs Required**
 Transformer information in a csv file with columns:
  - SS_NAME = Subsation name (important to keep spelling uniform)
  - SS_SYM = Substation symbol
@@ -38,7 +38,7 @@ Finally, when applied to a larger network such as Ireland:
 ![irish_power_network](https://cloud.githubusercontent.com/assets/20742138/23032365/ffc3b020-f46b-11e6-85d7-3b0ad793ca57.png)
 
 
-##**Author**
+## **Author**
 Written by Sean Blake in Trinity College Dublin, 2017
 
 Email: blakese@tcd.ie
