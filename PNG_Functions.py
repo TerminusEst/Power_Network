@@ -141,6 +141,9 @@ def substation_internals(substation, count):
         res2 = float(substation[0][8])     # low winding res
         tf_type = substation[0][6]
         switch = int(substation[0][-1])
+
+        if switch == 2:     # if the switch is open
+            ground_res = infbig
         #-----------------------------------------------------------------------
 
         if tf_type == "YY":    # Single YY transformer
@@ -160,8 +163,8 @@ def substation_internals(substation, count):
         #-----------------------------------------------------------------------
 
         if tf_type == "A":    # auto
-            #res1 = float(substation[0][7])*0.75     # high winding res
-            #res2 = res1*0.33333333
+            res1 = float(substation[0][7])*0.75     # high winding res
+            res2 = float(substation[0][7])*0.25
 
             HVss = [count, lat + dist_incr, lon, infsmall, infbig, ss_voltage, ss_name, "--", 'nan']
             Gt = [count+1, lat, lon, infsmall, ground_res + res2, ss_voltage, ss_name, tf_sym, switch]
@@ -200,6 +203,7 @@ def substation_internals(substation, count):
     HVss = [count, lat + 2*dist_incr, lon - 0.5*dist_incr, infsmall, infbig, ss_voltage, ss_name, "--", 'nan']
     LVss = [count+1, lat - 2*dist_incr, lon + 0.5*dist_incr, infsmall, infbig, ss_voltage, ss_name, "--", 'nan']
     transformers.extend([HVss, LVss])
+    substation_ground = float(substation[0][9])
 
     number = int(count)+2  # we start with number 2: 0 = HVss, 1 = LVss...
     for index, trafo in enumerate(substation):
@@ -208,6 +212,12 @@ def substation_internals(substation, count):
         tf_type = trafo[6]
         tf_sym = trafo[2]
         switch = int(trafo[-1])
+
+        if switch == 2:  # if the ground is open
+            ground_res = infbig
+        else:
+            ground_res = substation_ground
+
         #-----------------------------------------------------------------------
 
         if tf_type == "YY":    # YY
@@ -232,8 +242,8 @@ def substation_internals(substation, count):
 
         if tf_type == "A":    # autotransformer
 
-            #res1 = float(trafo[7])*0.75     # high winding res
-            #res2 = res1*0.33333333
+            res1 = float(trafo[7])*0.75     # high winding res
+            res2 = float(trafo[7])*0.25
 
             HVt = [number, lat + dist_incr, lon - index*dist_incr, infsmall, infbig, ss_voltage, ss_name, "--", 'nan']
             HVt_HVss = [count, number, infsmall, 'nan', 'nan', 'nan', 'nan', 'nan', ss_voltage]
@@ -419,4 +429,7 @@ def write_out(filename, ss_trafos, ss_connections, refined_connections2):
 
     print "Successfully written output file!"
 
+################################################################################
+################################################################################
+################################################################################
 
