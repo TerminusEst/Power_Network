@@ -2,11 +2,36 @@
 
 Python program to generate power network model for calculating geomagnetically induced currents.
 
-The program handles different types of transformers (Auto and two-winding), and multiple transformers per substation. It connects correctly between voltage systems. 
+The program handles different types of transformers (Auto and two-winding), and multiple transformers per substation. It connects correctly between voltage systems. In addition, parallel connections between substations are handled.
 
 Uses the approach outlined [here](http://onlinelibrary.wiley.com/doi/10.1002/2016SW001499/full).
 
+## Installation
+```python
+pip install power_network_model
+```
+
+## Quick Code Example
+If you have two .csv files with network information- one for connections, one for transformers
+```python
+import power_network_model as PNM
+
+# read in transformer file, generate substation data:
+filename = "Trafo_Info.csv"
+ss_trafos, ss_connections, ss_meta = PNM.make_substations(filename)
+
+# Generate connections between substations:
+filename = "Connection_Info.csv"
+connections_twixt_stations = PNM.connections_adder(filename, ss_meta)
+
+################################################################################
+# Write out the output file
+filename = "Model_Output.txt"
+PNM.write_out(filename, ss_trafos, ss_connections, connections_twixt_stations)
+```
 ## **Inputs Required**
+The two .csv file inputs need to be in the following format:
+
 Transformer information in a csv file with columns:
  - SS_NAME = Subsation name (important to keep spelling uniform)
  - SS_SYM = Substation symbol
