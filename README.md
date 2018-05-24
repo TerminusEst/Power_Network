@@ -14,20 +14,25 @@ pip install power_network_model
 ## Quick Code Example
 If you have two .csv files with network information- one for connections, one for transformers:
 ```python
+import pkg_resources
 import power_network_model as PNM
+import power_network_model.plotter as PNMplot
 
 # read in transformer file, generate substation data:
-filename = "Trafo_Info.csv"
-ss_trafos, ss_connections, ss_meta = PNM.make_substations(filename)
+trafo_filename = pkg_resources.resource_filename("power_network_model", 'Data/Horton_Input_Trafos.csv')
+ss_trafos, ss_connections, ss_meta = PNM.make_substations(trafo_filename)
 
 # Generate connections between substations:
-filename = "Connection_Info.csv"
-connections_twixt_stations = PNM.connections_adder(filename, ss_meta)
+connections_filename = pkg_resources.resource_filename("power_network_model", 'Data/Horton_Input_Connections.csv')
+connections_twixt_stations = PNM.connections_adder(connections_filename, ss_meta)
+
+# Write out the output files
+filename = "Horton_Output"
+nodes_output, connections_output = PNM.write_out(filename, ss_trafos, ss_connections, connections_twixt_stations)
 
 ################################################################################
-# Write out the output file
-filename = "Model_Output.txt"
-PNM.write_out(filename, ss_trafos, ss_connections, connections_twixt_stations)
+# If you want to plot the output:
+PNMplot.network_plotter(nodes_output, connections_output, ["red", "blue"], "Horton Model")
 ```
 ## **Inputs Required**
 The two .csv file inputs need to be in the following format:
