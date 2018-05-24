@@ -67,7 +67,7 @@ Connections information in a csv file with columns:
 ## **Output Files**
 Two .txt files are output, one for node information, and one for connections.
 
-Nodes file has columns:
+Nodes file has columns (left-to-right):
  - Node number
  - Substation latitude
  - Substation longitude
@@ -78,7 +78,7 @@ Nodes file has columns:
  - Transformer ID
  - Real (0) or imaginary (nan) node
 
-Connections file has columns:
+Connections file has columns (left-to-right):
  - Number of node from
  - Number of node to
  - Resistance of connection
