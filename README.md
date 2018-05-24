@@ -1,10 +1,14 @@
 # Power_Network_Model
 
+[![DOI](https://zenodo.org/badge/80825326.svg)](https://zenodo.org/badge/latestdoi/80825326)
+
 Python program to generate power network model for calculating [geomagnetically induced currents](https://en.wikipedia.org/wiki/Geomagnetically_induced_current).
 
 The program handles different types of transformers (Auto and two-winding), and multiple transformers per substation. It connects correctly between voltage systems. In addition, parallel connections between substations are handled.
 
 Uses the approach outlined [here](http://onlinelibrary.wiley.com/doi/10.1002/2016SW001499/full).
+
+This code appears in a manuscript currently submitted to Space Weather. Links to completed paper to follow.
 
 ## Installation
 ```python
