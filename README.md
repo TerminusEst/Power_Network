@@ -41,7 +41,7 @@ PNMplot.network_plotter(nodes_output, connections_output, ["red", "blue"], "Hort
 The above gives you the following model:
 ![Horton_Network](https://cloud.githubusercontent.com/assets/20742138/23833656/8c753db8-0740-11e7-9b63-981efeee10f4.png)
 
-The connections on one substation in this model is shown here:
+The connections at one substation in this model are shown here:
 ![Horton_Network Closeup](https://user-images.githubusercontent.com/20742138/40500027-86a90bb4-5f7b-11e8-8636-3e92ec404c4a.png)
 With red, blue and black lines for 500 kV, 345 kV and internal connections respectively. This substation connects two voltage regimes, and has two YY-transformers (3 nodes apiece).
 
