@@ -17,7 +17,7 @@ def network_plotter(trafo_file, connections_file, input_colors, image_title):
 
             Returns
             -----------
-            pretty plot to be saved at your leasure
+            pretty plot to be saved at your leisure
             -----------------------------------------------------------------
 
     """
