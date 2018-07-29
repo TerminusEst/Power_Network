@@ -96,7 +96,7 @@ Connections file has columns (left-to-right):
 ## **Verification**
 Verified with the [Horton 2012](http://ieeexplore.ieee.org/abstract/document/6298994/) model (included in Data/).
 After calculating GICs for a uniform electric field, compared to Horton:
-![Comparison](https://cloud.githubusercontent.com/assets/20742138/23833590/0e27c958-0740-11e7-9ae6-beaf2dda4ed4.png)
+![Comparison](https://user-images.githubusercontent.com/20742138/43364627-cf189464-9315-11e8-9437-59de5b4208ed.png)
 
 Finally, when applied to a larger network such as Ireland:
 ![irish_power_network](https://cloud.githubusercontent.com/assets/20742138/23032365/ffc3b020-f46b-11e6-85d7-3b0ad793ca57.png)
