@@ -16,7 +16,7 @@ pip install power_network_model
 ```
 
 ## Quick Code Example
-If you have two .csv files with network information- one for connections, one for transformers:
+Example data is given in the accompanying '/Data/' folder. If you have two .csv files with network information- one for connections, one for transformers:
 ```python
 import pkg_resources
 import power_network_model as PNM
