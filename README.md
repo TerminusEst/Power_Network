@@ -8,7 +8,7 @@ The program handles different types of transformers (Auto and two-winding), and 
 
 Uses the approach outlined [here](http://onlinelibrary.wiley.com/doi/10.1002/2016SW001499/full).
 
-This code appears in a manuscript currently submitted to Space Weather. Links to completed paper to follow.
+This code appears in a manuscript that is published in the [AGU Space Weather Journal](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2018SW001926).
 
 ## Installation
 ```python
