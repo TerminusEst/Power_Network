@@ -22,7 +22,7 @@ def network_plotter(trafo_file, connections_file, input_colors, image_title):
 
     """
     # Read in the transformer info first
-    a, b, c, d, e, f, z = np.loadtxt(trafo_file, usecols = (0, 1, 2, 3, 4, 5, 8), unpack = True)
+    a, b, c, d, e, f, z = np.loadtxt(trafo_file, delimiter='\t', usecols = (0, 1, 2, 3, 4, 5, 8), unpack = True)
 
     sitenum = a
     geolat = b
@@ -35,7 +35,7 @@ def network_plotter(trafo_file, connections_file, input_colors, image_title):
 
     #-------------------------------------------------------------------------------
     # Read in connections info
-    a2, b2, c2, d2, e2, f2, z2 = np.loadtxt(connections_file, usecols = (0, 1, 2, 3, 4, 5, 8), unpack = True)
+    a2, b2, c2, d2, e2, f2, z2 = np.loadtxt(connections_file, delimiter='\t', usecols = (0, 1, 2, 3, 4, 5, 8), unpack = True)
 
     latsfrom = [geolat[list(sitenum).index(x)] for x in a2]
     lonsfrom = [geolon[list(sitenum).index(x)] for x in a2]
